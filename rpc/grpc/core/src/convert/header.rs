@@ -25,23 +25,6 @@ from!(item: &kaspa_rpc_core::RpcHeader, protowire::RpcBlockHeader, {
     }
 });
 
-from!(item: &kaspa_rpc_core::RpcRawHeader, protowire::RpcBlockHeader, {
-    Self {
-        version: item.version.into(),
-        parents: item.parents_by_level.iter().map(protowire::RpcBlockLevelParents::from).collect(),
-        hash_merkle_root: item.hash_merkle_root.to_string(),
-        accepted_id_merkle_root: item.accepted_id_merkle_root.to_string(),
-        utxo_commitment: item.utxo_commitment.to_string(),
-        timestamp: item.timestamp.try_into().expect("timestamp is always convertible to i64"),
-        bits: item.bits,
-        nonce: item.nonce,
-        daa_score: item.daa_score,
-        blue_work: item.blue_work.to_rpc_hex(),
-        blue_score: item.blue_score,
-        pruning_point: item.pruning_point.to_string(),
-    }
-});
-
 from!(item: &Vec<RpcHash>, protowire::RpcBlockLevelParents, { Self { parent_hashes: item.iter().map(|x| x.to_string()).collect() } });
 
 // ----------------------------------------------------------------------------
@@ -66,23 +49,6 @@ try_from!(item: &protowire::RpcBlockHeader, kaspa_rpc_core::RpcHeader, {
     );
 
     header.into()
-});
-
-try_from!(item: &protowire::RpcBlockHeader, kaspa_rpc_core::RpcRawHeader, {
-    Self {
-        version: item.version.try_into()?,
-        parents_by_level: item.parents.iter().map(Vec::<RpcHash>::try_from).collect::<RpcResult<Vec<Vec<RpcHash>>>>()?,
-        hash_merkle_root: RpcHash::from_str(&item.hash_merkle_root)?,
-        accepted_id_merkle_root: RpcHash::from_str(&item.accepted_id_merkle_root)?,
-        utxo_commitment: RpcHash::from_str(&item.utxo_commitment)?,
-        timestamp: item.timestamp.try_into()?,
-        bits: item.bits,
-        nonce: item.nonce,
-        daa_score: item.daa_score,
-        blue_work: kaspa_rpc_core::RpcBlueWorkType::from_rpc_hex(&item.blue_work)?,
-        blue_score: item.blue_score,
-        pruning_point: RpcHash::from_str(&item.pruning_point)?,
-    }
 });
 
 try_from!(item: &protowire::RpcBlockLevelParents, Vec<RpcHash>, {

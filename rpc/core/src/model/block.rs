@@ -1,14 +1,13 @@
-use super::RpcRawHeader;
 use crate::prelude::{RpcHash, RpcHeader, RpcTransaction};
 use serde::{Deserialize, Serialize};
 use workflow_serializer::prelude::*;
 
-/// Raw Rpc block type - without a cached header hash and without verbose data.
+/// Raw Rpc block type - without verbose data.
 /// Used for mining APIs (get_block_template & submit_block)
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RpcRawBlock {
-    pub header: RpcRawHeader,
+    pub header: RpcHeader,
     pub transactions: Vec<RpcTransaction>,
 }
 
@@ -45,7 +44,7 @@ impl Deserializer for RpcBlock {
 impl Serializer for RpcRawBlock {
     fn serialize<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
         store!(u16, &1, writer)?;
-        serialize!(RpcRawHeader, &self.header, writer)?;
+        serialize!(RpcHeader, &self.header, writer)?;
         serialize!(Vec<RpcTransaction>, &self.transactions, writer)?;
 
         Ok(())
@@ -55,7 +54,7 @@ impl Serializer for RpcRawBlock {
 impl Deserializer for RpcRawBlock {
     fn deserialize<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
         let _version = load!(u16, reader)?;
-        let header = deserialize!(RpcRawHeader, reader)?;
+        let header = deserialize!(RpcHeader, reader)?;
         let transactions = deserialize!(Vec<RpcTransaction>, reader)?;
 
         Ok(Self { header, transactions })
